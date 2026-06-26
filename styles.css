@@ -365,7 +365,7 @@ main {
   display: grid;
   grid-template-columns: 360px minmax(0, 1fr);
   gap: 18px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .control-panel,
@@ -381,7 +381,6 @@ main {
 }
 
 .control-panel {
-  height: 100%;
   padding: 18px;
 }
 
