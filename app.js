@@ -52,6 +52,7 @@ const SCHOOL_TIER_BY_ID = Object.fromEntries(
 );
 
 const DEFAULT_DISTRICTS = [];
+const DISTRICT_PRIORITY = ["高新区", "雁塔区", "曲江新区", "莲湖区", "航天基地"];
 const AMAP_KEY = "a4b721ec0e33f45ca89c69cbf9c10fd6";
 const AMAP_SECURITY_CODE = "812202a0c120f156eab501367b5e31f8";
 
@@ -143,6 +144,16 @@ function clamp(value, min, max) {
 
 function unique(values) {
   return [...new Set(values)].filter(Boolean).sort((a, b) => a.localeCompare(b, "zh-CN"));
+}
+
+function sortDistricts(districts) {
+  return unique(districts).sort((a, b) => {
+    const priorityA = DISTRICT_PRIORITY.indexOf(a);
+    const priorityB = DISTRICT_PRIORITY.indexOf(b);
+    const rankA = priorityA === -1 ? DISTRICT_PRIORITY.length : priorityA;
+    const rankB = priorityB === -1 ? DISTRICT_PRIORITY.length : priorityB;
+    return rankA - rankB || a.localeCompare(b, "zh-CN");
+  });
 }
 
 function getNumber(input, fallback) {
@@ -1760,7 +1771,7 @@ function renderSources() {
 
 function populateFilters() {
   document.querySelector("#schoolCount").textContent = SCHOOL_DATA.length;
-  unique(SCHOOL_DATA.map((school) => school.district)).forEach((district) => {
+  sortDistricts(SCHOOL_DATA.map((school) => school.district)).forEach((district) => {
     districtFilter.append(createDistrictCheckbox(district, DEFAULT_DISTRICTS.includes(district)));
     browseDistrictFilter.append(createDistrictCheckbox(district, false));
   });
