@@ -669,6 +669,13 @@ input[type="range"] {
   padding: 18px;
 }
 
+.result-panel {
+  display: flex;
+  height: var(--control-panel-height, auto);
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .score-card {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -713,8 +720,8 @@ input[type="range"] {
 }
 
 .tier-board-shell {
-  max-height: max(360px, calc(var(--control-panel-height, 760px) - 224px));
-  min-height: max(360px, calc(var(--control-panel-height, 760px) - 224px));
+  flex: 1;
+  min-height: 0;
   overflow: auto;
   padding-right: 2px;
   overscroll-behavior: auto;
@@ -722,7 +729,7 @@ input[type="range"] {
 
 .tier-column {
   display: flex;
-  min-height: max(340px, calc(var(--control-panel-height, 760px) - 250px));
+  min-height: 100%;
   flex-direction: column;
   min-width: 0;
   border: 1px solid rgba(24, 32, 52, 0.1);
@@ -1441,6 +1448,7 @@ input[type="range"] {
   .result-panel,
   .tier-board-shell,
   .tier-column {
+    height: auto;
     min-height: 0;
   }
 
