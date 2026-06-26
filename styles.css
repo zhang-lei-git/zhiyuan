@@ -672,6 +672,10 @@ input[type="range"] {
   padding: 18px;
 }
 
+.result-panel {
+  padding-top: 0;
+}
+
 .score-card {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -720,7 +724,7 @@ input[type="range"] {
   min-height: max(360px, calc(var(--control-panel-height, 760px) - 224px));
   overflow: auto;
   padding-right: 2px;
-  overscroll-behavior: contain;
+  overscroll-behavior: auto;
 }
 
 .tier-column {
