@@ -28,6 +28,21 @@ const SOURCE_LINKS = [
     title: "2026年西安市中考计分科目",
     url: "https://xa.bendibao.com/edu/202633/148243.shtm",
     note: "2026年计分科目7科，满分640分"
+  },
+  {
+    title: "2026西安首场中招会：大唐西市国际会展中心6月26-27日",
+    url: "https://finance.sina.com.cn/tjhz/2026-06-21/doc-iniecryz8024288.shtml",
+    note: "中招会时间、地点和现场咨询内容"
+  },
+  {
+    title: "2026西安中考分数段与高中匹配预测",
+    url: "https://www.sohu.com/a/1028509253_122648216",
+    note: "公开预估分段，按640分新中考口径整理"
+  },
+  {
+    title: "2026西安中考分数线重磅预估",
+    url: "https://www.sohu.com/a/993297699_122580031",
+    note: "公开预估线补充，含五大名校和重点校区间"
   }
 ];
 
@@ -38,10 +53,48 @@ const CONTROL_LINES = {
 };
 
 const TARGET_YEAR_PRESETS = {
-  2026: { label: "2026预测", max: 640, control: 480, locked: false },
+  2026: { label: "2026预测", max: 640, control: 470, locked: false },
   2025: { label: "2025复盘", max: 820, control: 611, locked: true },
   2024: { label: "2024复盘", max: 700, control: 501, locked: true },
   2023: { label: "2023复盘", max: 700, control: 539, locked: true }
+};
+
+const PUBLIC_2026_ESTIMATE_BASE_CONTROL = 470;
+
+const PUBLIC_2026_ESTIMATES = {
+  xgdfz: { range: [610, 615], source: "2026公开预估" },
+  tieyi: { range: [605, 610], source: "2026公开预估" },
+  jiaodafz: { range: [600, 605], source: "2026公开预估" },
+  gaoxin1: { range: [598, 603], source: "2026公开预估" },
+  sdfz: { range: [595, 600], source: "2026公开预估" },
+  "tieyi-binhe": { range: [570, 580], source: "2026最新分段预估" },
+  xazx: { range: [585, 590], source: "2026最新分段预估" },
+  xasan: { range: [585, 590], source: "2026最新分段预估" },
+  xayi: { range: [575, 585], source: "2026最新分段预估" },
+  changan1: { range: [575, 585], source: "2026最新分段预估" },
+  "83": { range: [570, 580], source: "2026最新分段预估" },
+  "85": { range: [570, 580], source: "2026最新分段预估" },
+  xagj: { range: [570, 575], source: "2026最新分段预估" },
+  "sdfz-lugang": { range: [570, 575], source: "2026最新分段预估" },
+  tangnan: { range: [565, 570], source: "2026最新分段预估" },
+  "6": { range: [565, 570], source: "2026最新分段预估" },
+  "75": { range: [560, 565], source: "2026最新分段预估" },
+  "xd-fz": { range: [560, 565], source: "2026最新分段预估" },
+  "11": { range: [540, 560], source: "2026最新分段预估" },
+  qinghua: { range: [520, 540], source: "2026最新分段预估" },
+  "30": { range: [520, 540], source: "2026最新分段预估" },
+  siyuan: { range: [480, 520], source: "2026最新分段预估" },
+  "tieyi-guoji": { range: [590, 595], source: "2026公开预估补充" },
+  "gx-fengdong": { range: [540, 570], source: "2026公开预估补充" },
+  qujiang1: { range: [540, 570], source: "2026公开预估补充" },
+  jingkai1: { range: [540, 570], source: "2026公开预估补充" },
+  "26": { range: [540, 570], source: "2026公开预估补充" },
+  "70": { range: [540, 570], source: "2026公开预估补充" },
+  xdfz: { range: [540, 570], source: "2026公开预估补充" },
+  qingan: { range: [540, 570], source: "2026公开预估补充" },
+  "jiaoda-hangtian": { range: [540, 570], source: "2026公开预估补充" },
+  gx2: { range: [540, 570], source: "2026公开预估补充" },
+  hangtian: { range: [540, 570], source: "2026公开预估补充" }
 };
 
 const RANK_REFERENCE_DATA = {

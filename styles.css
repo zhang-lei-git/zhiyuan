@@ -1333,6 +1333,16 @@ input[type="range"] {
   line-height: 1.15;
 }
 
+.detail-summary-grid small {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
 .outcome-metric small {
   display: block;
   margin-top: 5px;

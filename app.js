@@ -647,6 +647,7 @@ function getState() {
 }
 
 function estimateSchool(school, state) {
+  const publicEstimate = getPublicEstimate2026(school, state);
   const items = Object.entries(school.lines)
     .map(([year, rawLine]) => {
       const reference = CONTROL_LINES[year];
@@ -667,7 +668,7 @@ function estimateSchool(school, state) {
 
   const totalWeight = items.reduce((sum, item) => sum + item.weight, 0) || 1;
   const weightedRate = items.reduce((sum, item) => sum + item.deltaRate * item.weight, 0) / totalWeight;
-  const requiredDelta = weightedRate * state.effectiveRange;
+  const requiredDelta = publicEstimate?.requiredDelta ?? weightedRate * state.effectiveRange;
   const expectedLine = clamp(state.controlLine + requiredDelta, 0, state.targetMax);
   const gap = state.studentDelta - requiredDelta;
   const match = classifyGap(gap, state);
@@ -695,11 +696,44 @@ function estimateSchool(school, state) {
     latestLine: school.lines[2025] ?? school.lines[2024] ?? school.lines[2023],
     requiredDelta,
     expectedLine,
+    publicEstimate,
     gap,
     match,
     trend,
     confidence,
     matchScore
+  };
+}
+
+function getPublicEstimate2026(school, state) {
+  if (state.year !== 2026 || typeof PUBLIC_2026_ESTIMATES === "undefined") {
+    return null;
+  }
+
+  const estimate = PUBLIC_2026_ESTIMATES[school.id] ?? PUBLIC_2026_ESTIMATES[school.code];
+  if (!estimate) {
+    return null;
+  }
+
+  const range = Array.isArray(estimate.range) ? estimate.range : [estimate.line, estimate.line];
+  const values = range.map(Number).filter(Number.isFinite);
+  if (!values.length) {
+    return null;
+  }
+
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const line = Number.isFinite(estimate.line) ? Number(estimate.line) : (min + max) / 2;
+  const baseControl = Number.isFinite(estimate.baseControl)
+    ? Number(estimate.baseControl)
+    : (typeof PUBLIC_2026_ESTIMATE_BASE_CONTROL === "number" ? PUBLIC_2026_ESTIMATE_BASE_CONTROL : TARGET_YEAR_PRESETS[2026]?.control ?? state.controlLine);
+
+  return {
+    line,
+    min,
+    max,
+    requiredDelta: line - baseControl,
+    source: estimate.source ?? "2026公开预估"
   };
 }
 
@@ -1150,6 +1184,7 @@ function renderTierBoard(schools) {
 }
 
 function renderCompactSchool(school) {
+  const lineText = formatExpectedLine(school);
   return `
     <article class="school-item interactive-school" data-school-id="${school.id}" role="button" tabindex="0" aria-label="查看${school.name}出口详情">
       <h4>${school.shortName}</h4>
@@ -1164,7 +1199,7 @@ function renderCompactSchool(school) {
         <div class="meter" aria-label="匹配度 ${round(school.matchScore)}">
           <span style="--meter:${round(school.matchScore, 0)}%"></span>
         </div>
-        <span class="gap-text">${school.match} · 预测线 ${round(school.expectedLine)} · 余量 ${formatGap(school.gap)} · 距家 ${formatDistance(school)}</span>
+        <span class="gap-text">${school.match} · ${lineText} · 余量 ${formatGap(school.gap)} · 距家 ${formatDistance(school)}</span>
       </div>
     </article>
   `;
@@ -1190,12 +1225,12 @@ function renderPlanModeHint(plan) {
   }
 
   if (currentState.planMode === "score-first" && plan.secondAnchor) {
-    hint.textContent = `最高分优先：先比较顺序检索下最值得争取的学校，当前二批锚点为 ${plan.secondAnchor.shortName}（预测线 ${round(plan.secondAnchor.expectedLine)}）；一批次只放预测线更高或基本够不上的学校，并自动满足一批至少2所。`;
+    hint.textContent = `最高分优先：先比较顺序检索下最值得争取的学校，当前二批锚点为 ${plan.secondAnchor.shortName}（${formatExpectedLine(plan.secondAnchor)}）；一批次只放预测线更高或基本够不上的学校，并自动满足一批至少2所。`;
     return;
   }
 
   if (currentState.planMode === "second-main" && plan.secondAnchor) {
-    hint.textContent = `二批优质校优先：二批冲刺目标为 ${plan.secondAnchor.shortName}（预测线 ${round(plan.secondAnchor.expectedLine)}）；一批次优先填高冲滑档校，并自动满足一批至少2所。`;
+    hint.textContent = `二批优质校优先：二批冲刺目标为 ${plan.secondAnchor.shortName}（${formatExpectedLine(plan.secondAnchor)}）；一批次优先填高冲滑档校，并自动满足一批至少2所。`;
     return;
   }
 
@@ -1224,6 +1259,7 @@ function renderVolunteerRow(row) {
   }
 
   const school = row.school;
+  const lineText = formatExpectedLine(school);
   const targetText = row.role === "定向" && school.targetQuota
     ? ` · 定向名额 ${school.targetQuota.quota} 个`
     : "";
@@ -1240,7 +1276,7 @@ function renderVolunteerRow(row) {
         <span>${school.code} · ${school.tier} · ${school.district} · ${school.batch} · 距家 ${formatDistance(school)}${targetText}</span>
       </div>
       <span class="match-badge ${MATCH_CLASS[school.match]}">${row.role} / ${school.match}</span>
-      <span class="volunteer-risk">预测线 ${round(school.expectedLine)}，余量 ${formatGap(school.gap)}</span>
+      <span class="volunteer-risk">${lineText}，余量 ${formatGap(school.gap)}</span>
     </article>
   `;
 }
@@ -1410,6 +1446,7 @@ function renderSchoolGrid(schools) {
 
 function renderSchoolCard(school) {
   const yearText = school.referenceYears.length ? school.referenceYears.join("、") : "暂无";
+  const lineText = formatExpectedLine(school);
   return `
     <article class="school-card interactive-school" data-school-id="${school.id}" role="button" tabindex="0" aria-label="查看${school.name}出口详情">
       <div class="card-head">
@@ -1429,10 +1466,10 @@ function renderSchoolCard(school) {
         <div class="meter">
           <span style="--meter:${round(school.matchScore, 0)}%"></span>
         </div>
-        <span class="gap-text">匹配度 ${round(school.matchScore, 0)} · 余量 ${formatGap(school.gap)} · 距家 ${formatDistance(school)} · 预测线 ${round(school.expectedLine)}</span>
+        <span class="gap-text">匹配度 ${round(school.matchScore, 0)} · 余量 ${formatGap(school.gap)} · 距家 ${formatDistance(school)} · ${lineText}</span>
       </div>
       <p class="school-note">
-        参考 ${yearText} 年，近年${school.trend.label}，置信度${school.confidence}。
+        ${school.publicEstimate ? `${school.publicEstimate.source}，历史参考 ${yearText} 年` : `参考 ${yearText} 年`}，近年${school.trend.label}，置信度${school.confidence}。
         ${school.tags.map((tag) => `#${tag}`).join(" ")}
       </p>
       <span class="detail-hint">点击查看出口数据</span>
@@ -1446,6 +1483,16 @@ function renderPill(text, extraClass = "") {
 
 function formatGap(gap) {
   return gap >= 0 ? `+${round(gap)}` : round(gap);
+}
+
+function formatExpectedLine(school) {
+  if (!school.publicEstimate) {
+    return `预测线 ${round(school.expectedLine)}`;
+  }
+
+  const { min, max, source } = school.publicEstimate;
+  const range = min === max ? round(min) : `${round(min)}-${round(max)}`;
+  return `${source} ${range}`;
 }
 
 function getOutcomeData(school) {
@@ -1594,6 +1641,7 @@ function renderSchoolDetail(school) {
       <div>
         <span>预测线</span>
         <strong>${round(school.expectedLine)}</strong>
+        ${school.publicEstimate ? `<small>${formatExpectedLine(school)}</small>` : ""}
       </div>
       <div>
         <span>当前余量</span>
