@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>西安志愿填报预测系统</title>
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css?v=202606251151" />
+    <script defer src="./assets/lucide.min.js?v=202606251151"></script>
+    <script defer src="./schools-data.js?v=202606251151"></script>
+    <script defer src="./app.js?v=202606251151"></script>
+  </head>
+  <body>
+    <div class="scene" aria-hidden="true">
+      <div class="star star-a"></div>
+      <div class="star star-b"></div>
+      <div class="star star-c"></div>
+      <div class="grid-glow"></div>
+    </div>
+
+    <header class="app-header">
+      <nav class="topbar" aria-label="主导航">
+        <a class="brand" href="#predictor" aria-label="返回预测面板">
+          <span class="brand-mark">志</span>
+          <span>
+            <strong>西安志愿预测</strong>
+            <small>城六区 · 高中录取参考</small>
+          </span>
+        </a>
+      </nav>
+
+      <section class="hero" id="predictor">
+        <div class="hero-copy">
+          <p class="eyebrow">Xi'an High School Admission Oracle</p>
+          <h1>西安城六区中考志愿填报预测系统</h1>
+          <p class="hero-text">
+            输入成绩后，系统会按历年录取线差、学校层级、批次规则和兜底梯度，生成定向、一批次、二批次志愿组合。
+          </p>
+          <div class="hero-metrics" aria-label="系统指标">
+            <span><strong id="schoolCount">0</strong>所学校</span>
+            <span><strong>1+3+4</strong>志愿结构</span>
+            <span><strong>线差</strong>预测</span>
+          </div>
+        </div>
+
+        <div class="mascot-panel" aria-label="二次元助手">
+          <div class="mascot">
+            <div class="mascot-hair"></div>
+            <div class="mascot-face">
+              <span class="eye left"></span>
+              <span class="eye right"></span>
+              <span class="mouth"></span>
+            </div>
+            <div class="mascot-bow"></div>
+            <div class="mascot-body"></div>
+          </div>
+          <div class="speech">
+            <strong>填报小助手</strong>
+            <span>冲稳保要拉开，底线要真能兜住。</span>
+          </div>
+        </div>
+      </section>
+    </header>
+
+    <main>
+      <section class="workspace">
+        <aside class="control-panel" aria-label="预测输入">
+          <form id="predictForm">
+            <div class="panel-title">
+              <span class="icon-shell"><i data-lucide="sparkles"></i></span>
+              <div>
+                <h2>预测参数</h2>
+                <p>按当前分数口径换算为线差</p>
+              </div>
+            </div>
+
+            <label class="field">
+              <span>中考总分</span>
+              <input id="scoreInput" type="number" inputmode="decimal" min="0" max="820" step="0.1" value="575" />
+            </label>
+
+            <label class="field">
+              <span>本届城六区普高控制线</span>
+              <input id="controlLineInput" type="number" inputmode="decimal" min="0" max="820" step="0.1" value="480" />
+            </label>
+
+            <div class="rank-preview" aria-live="polite">
+              <div>
+                <span>预测城六区位次</span>
+                <strong id="rankEstimate">--</strong>
+              </div>
+              <div>
+                <span>预测位比</span>
+                <strong id="rankPercent">--</strong>
+              </div>
+              <p id="rankSourceNote">按2025城六区一分一段表换算。</p>
+              <small id="rankMappedScore">2025参考口径：--</small>
+            </div>
+
+            <label class="field">
+              <span>家庭地址</span>
+              <input id="homeAddressInput" type="text" autocomplete="off" value="保利天瓒" placeholder="输入小区、路名或地标，如保利天瓒" />
+              <small id="homeAddressStatus" class="field-hint">默认按保利天瓒计算；也可输入地址后从高德提示中选择。</small>
+            </label>
+            <input id="homeLatInput" type="hidden" value="34.233024" />
+            <input id="homeLngInput" type="hidden" value="108.890189" />
+
+            <label class="field">
+              <span>距离筛选</span>
+              <select id="distanceFilter">
+                <option value="all">不限距离</option>
+                <option value="5">驾车5公里以内</option>
+                <option value="10">驾车10公里以内</option>
+                <option value="15">驾车15公里以内</option>
+                <option value="20">驾车20公里以内</option>
+              </select>
+              <small class="field-hint">仅剔除已确认超出范围的学校；计算中的学校会先保留。</small>
+            </label>
+
+            <fieldset class="range-panel">
+              <legend>余量范围设置</legend>
+              <div class="range-grid">
+                <label class="field">
+                  <span>冲刺最小</span>
+                  <input id="rushMinInput" type="number" inputmode="decimal" step="1" value="-15" />
+                </label>
+                <label class="field">
+                  <span>冲刺最大</span>
+                  <input id="rushMaxInput" type="number" inputmode="decimal" step="1" value="-5" />
+                </label>
+                <label class="field">
+                  <span>稳妥最小</span>
+                  <input id="stableMinInput" type="number" inputmode="decimal" step="1" value="-5" />
+                </label>
+                <label class="field">
+                  <span>稳妥最大</span>
+                  <input id="stableMaxInput" type="number" inputmode="decimal" step="1" value="5" />
+                </label>
+                <label class="field">
+                  <span>保底最小</span>
+                  <input id="safeMinInput" type="number" inputmode="decimal" step="1" value="5" />
+                </label>
+                <label class="field">
+                  <span>保底最大</span>
+                  <input id="safeMaxInput" type="number" inputmode="decimal" step="1" value="15" />
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset class="chips-field district-field">
+              <legend>偏好区域</legend>
+              <div id="districtFilter" class="district-chips" role="group" aria-label="偏好区域">
+                <label><input type="checkbox" value="all" checked />不限区域</label>
+              </div>
+            </fieldset>
+
+            <div class="field-grid">
+              <label class="field">
+                <span>学校性质</span>
+                <select id="ownershipFilter">
+                  <option value="all">公办+民办</option>
+                  <option value="公办">只看公办</option>
+                  <option value="民办">只看民办</option>
+                </select>
+              </label>
+            </div>
+
+            <fieldset class="chips-field">
+              <legend>学校层级</legend>
+              <label><input type="checkbox" name="level" value="省示范" checked />省示范</label>
+              <label><input type="checkbox" name="level" value="省标准" checked />省标准</label>
+              <label><input type="checkbox" name="level" value="普通" checked />普通</label>
+            </fieldset>
+
+            <div class="toggle-row">
+              <label><input id="publicSafetyOnly" type="checkbox" />兜底优先公办</label>
+              <label><input id="showOnlyMatched" type="checkbox" />只看可报区间</label>
+            </div>
+
+            <button class="primary-button" type="submit">
+              <i data-lucide="wand-sparkles"></i>
+              生成志愿方案
+            </button>
+          </form>
+        </aside>
+
+        <section class="result-panel" aria-live="polite">
+          <div class="score-card">
+            <div>
+              <p>考生线差</p>
+              <strong id="studentDelta">+100</strong>
+              <span id="scoreSummary">高出控制线 100 分</span>
+            </div>
+            <div>
+              <p>推荐策略</p>
+              <strong id="strategyName">均衡稳妥</strong>
+              <span id="strategySummary">冲 1、稳 4、保 3</span>
+            </div>
+            <div>
+              <p>滑档保护</p>
+              <strong id="safetyScore">良好</strong>
+              <span id="safetySummary">末位志愿低于线差 35 分以上</span>
+            </div>
+          </div>
+
+          <div class="section-heading">
+            <span class="icon-shell"><i data-lucide="route"></i></span>
+            <div>
+              <h2>推荐志愿层级</h2>
+              <p>按冲刺、稳妥、保底分层，分差越大越稳</p>
+            </div>
+          </div>
+
+          <div class="tier-board-shell">
+            <div id="tierBoard" class="tier-board"></div>
+          </div>
+        </section>
+      </section>
+
+      <section class="form-section" id="form-plan">
+        <div class="section-heading">
+          <span class="icon-shell"><i data-lucide="clipboard-list"></i></span>
+          <div>
+            <h2>志愿填报表格</h2>
+            <p>按城六区普通高中志愿结构生成：定向 1 所，第一批次 3 所，第二批次 4 所</p>
+          </div>
+        </div>
+        <fieldset class="plan-mode-control">
+          <legend>填报策略</legend>
+          <label>
+            <input type="radio" name="planMode" value="score-first" checked />
+            <span>最高分优先</span>
+            <small>按批次顺序检索，避免一批低分校截断二批高分目标。</small>
+          </label>
+          <label>
+            <input type="radio" name="planMode" value="first-main" />
+            <span>省示范优先</span>
+            <small>优先省示范，但不为省示范牺牲过多分数。</small>
+          </label>
+          <label>
+            <input type="radio" name="planMode" value="second-main" />
+            <span>二批优质校优先</span>
+            <small>一批尽量滑档，二批争取高分省标准或普通高中。</small>
+          </label>
+          <label class="demo-gap-control">
+            <span>省示范最大降分</span>
+            <input id="demoMaxGapInput" type="number" inputmode="decimal" min="0" max="40" step="1" value="15" />
+            <small>仅用于“省示范优先”：一批省示范余量超过该值就不推荐。</small>
+          </label>
+        </fieldset>
+        <p id="planModeHint" class="plan-mode-hint"></p>
+        <div id="volunteerTable" class="volunteer-table"></div>
+      </section>
+
+      <section class="browser-section" id="school-list">
+        <div class="section-heading">
+          <span class="icon-shell"><i data-lucide="school"></i></span>
+          <div>
+            <h2>学校推荐库</h2>
+            <p>支持按分数匹配度、类型、性质和区域筛选</p>
+          </div>
+        </div>
+        <div class="toolbar">
+          <label class="search-box">
+            <i data-lucide="search"></i>
+            <input id="searchInput" type="search" placeholder="搜索学校、区域、标签" />
+          </label>
+          <select id="batchFilter">
+            <option value="all">全部批次</option>
+            <option value="第一批次">第一批次</option>
+            <option value="第二批次">第二批次</option>
+          </select>
+          <select id="matchFilter">
+            <option value="all">全部匹配度</option>
+            <option value="冲刺">冲刺</option>
+            <option value="稳妥">稳妥</option>
+            <option value="保底">保底</option>
+            <option value="超高风险">超高风险</option>
+          </select>
+          <details class="browse-district-menu">
+            <summary>区域筛选</summary>
+            <div id="browseDistrictFilter" class="district-chips compact" role="group" aria-label="学校推荐库区域筛选">
+              <label><input type="checkbox" value="all" checked />不限区域</label>
+            </div>
+          </details>
+        </div>
+        <div id="schoolGrid" class="school-grid"></div>
+      </section>
+
+      <section class="rules-section" id="data-note">
+        <div class="rule-card">
+          <h2>预测方法</h2>
+          <p>
+            系统先计算学校历年在“控制线以上有效分段”的位置：学校热度 = (学校录取线 - 当年控制线) / (当年满分 - 当年控制线)。
+            再按 2025、2024、2023 加权映射到当前年份，余量 = 考生成绩 - 学校预测线。
+          </p>
+        </div>
+        <div class="rule-card">
+          <h2>填报原则</h2>
+          <p>
+            第一批次优先放置省示范高中，按“冲、稳、保”拉开梯度；第二批次补足稳定和兜底学校。
+            保底学校默认限制在设定余量内，避免分差过大浪费志愿；定向志愿优先选择余量 -20 到 +5 内、名额较多且录取线较高的冲刺学校，可与第一、二批次学校重复。
+          </p>
+        </div>
+        <div class="rule-card sources">
+          <h2>数据说明</h2>
+          <p>
+            录取数据来自公开资料整理；定向名额当前使用“高新一中初级中学”2025年定向招生名额整理表。正式填报前请以西安市教育局和当年招生平台公布信息为准。
+          </p>
+          <div id="sourceList"></div>
+        </div>
+      </section>
+    </main>
+
+    <div id="schoolDetailOverlay" class="school-detail-overlay" hidden></div>
+    <aside id="schoolDetailSheet" class="school-detail-sheet" aria-hidden="true" aria-labelledby="detailSchoolName">
+      <div class="detail-grip" aria-hidden="true"></div>
+      <div id="schoolDetailContent" class="school-detail-content"></div>
+    </aside>
+  </body>
+</html>
