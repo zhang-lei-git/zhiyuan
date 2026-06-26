@@ -11,7 +11,6 @@
   --yellow: #ffd166;
   --violet: #8e7dff;
   --shadow: 0 18px 48px rgba(24, 32, 52, 0.14);
-  --sticky-offset: 0px;
   font-family:
     Inter, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", system-ui,
     sans-serif;
@@ -382,8 +381,6 @@ main {
 }
 
 .control-panel {
-  position: sticky;
-  top: var(--sticky-offset);
   padding: 18px;
 }
 
@@ -670,10 +667,6 @@ input[type="range"] {
 .form-section,
 .browser-section {
   padding: 18px;
-}
-
-.result-panel {
-  padding-top: 0;
 }
 
 .score-card {
