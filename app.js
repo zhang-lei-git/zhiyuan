@@ -668,7 +668,8 @@ function estimateSchool(school, state) {
 
   const totalWeight = items.reduce((sum, item) => sum + item.weight, 0) || 1;
   const weightedRate = items.reduce((sum, item) => sum + item.deltaRate * item.weight, 0) / totalWeight;
-  const requiredDelta = publicEstimate?.requiredDelta ?? weightedRate * state.effectiveRange;
+  const modelRequiredDelta = weightedRate * state.effectiveRange;
+  const requiredDelta = getCalibratedRequiredDelta(modelRequiredDelta, publicEstimate);
   const expectedLine = clamp(state.controlLine + requiredDelta, 0, state.targetMax);
   const gap = state.studentDelta - requiredDelta;
   const match = classifyGap(gap, state);
@@ -694,6 +695,7 @@ function estimateSchool(school, state) {
     tier: SCHOOL_TIER_BY_ID[school.id] ?? "梯队待补",
     referenceYears: items.map((item) => item.year).sort((a, b) => b - a),
     latestLine: school.lines[2025] ?? school.lines[2024] ?? school.lines[2023],
+    modelRequiredDelta,
     requiredDelta,
     expectedLine,
     publicEstimate,
@@ -703,6 +705,25 @@ function estimateSchool(school, state) {
     confidence,
     matchScore
   };
+}
+
+function getCalibratedRequiredDelta(modelRequiredDelta, publicEstimate) {
+  if (!publicEstimate) {
+    return modelRequiredDelta;
+  }
+
+  const width = publicEstimate.max - publicEstimate.min;
+  const estimateDelta = publicEstimate.requiredDelta;
+  if (width <= 12) {
+    return estimateDelta;
+  }
+
+  const maxDownwardAdjustment = 5;
+  if (estimateDelta < modelRequiredDelta) {
+    return Math.max(estimateDelta, modelRequiredDelta - maxDownwardAdjustment);
+  }
+
+  return Math.min(estimateDelta, modelRequiredDelta + 8);
 }
 
 function getPublicEstimate2026(school, state) {
@@ -1492,7 +1513,11 @@ function formatExpectedLine(school) {
 
   const { min, max, source } = school.publicEstimate;
   const range = min === max ? round(min) : `${round(min)}-${round(max)}`;
-  return `${source} ${range}`;
+  const modelLine = Number.isFinite(school.modelRequiredDelta) && currentState
+    ? currentState.controlLine + school.modelRequiredDelta
+    : null;
+  const modelText = Number.isFinite(modelLine) ? `，历史模型 ${round(modelLine)}` : "";
+  return `预测线 ${round(school.expectedLine)}（${source} ${range}${modelText}）`;
 }
 
 function getOutcomeData(school) {
