@@ -80,21 +80,7 @@ const PUBLIC_2026_ESTIMATES = {
   "6": { range: [565, 570], source: "2026最新分段预估" },
   "75": { range: [560, 565], source: "2026最新分段预估" },
   "xd-fz": { range: [560, 565], source: "2026最新分段预估" },
-  "11": { range: [540, 560], source: "2026最新分段预估" },
-  qinghua: { range: [520, 540], source: "2026最新分段预估" },
-  "30": { range: [520, 540], source: "2026最新分段预估" },
-  siyuan: { range: [480, 520], source: "2026最新分段预估" },
-  "tieyi-guoji": { range: [590, 595], source: "2026公开预估补充" },
-  "gx-fengdong": { range: [540, 570], source: "2026公开预估补充" },
-  qujiang1: { range: [540, 570], source: "2026公开预估补充" },
-  jingkai1: { range: [540, 570], source: "2026公开预估补充" },
-  "26": { range: [540, 570], source: "2026公开预估补充" },
-  "70": { range: [540, 570], source: "2026公开预估补充" },
-  xdfz: { range: [540, 570], source: "2026公开预估补充" },
-  qingan: { range: [540, 570], source: "2026公开预估补充" },
-  "jiaoda-hangtian": { range: [540, 570], source: "2026公开预估补充" },
-  gx2: { range: [540, 570], source: "2026公开预估补充" },
-  hangtian: { range: [540, 570], source: "2026公开预估补充" }
+  "tieyi-guoji": { range: [590, 595], source: "2026公开预估补充" }
 };
 
 const RANK_REFERENCE_DATA = {

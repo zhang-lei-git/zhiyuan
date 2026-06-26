@@ -712,18 +712,7 @@ function getCalibratedRequiredDelta(modelRequiredDelta, publicEstimate) {
     return modelRequiredDelta;
   }
 
-  const width = publicEstimate.max - publicEstimate.min;
-  const estimateDelta = publicEstimate.requiredDelta;
-  if (width <= 12) {
-    return estimateDelta;
-  }
-
-  const maxDownwardAdjustment = 5;
-  if (estimateDelta < modelRequiredDelta) {
-    return Math.max(estimateDelta, modelRequiredDelta - maxDownwardAdjustment);
-  }
-
-  return Math.min(estimateDelta, modelRequiredDelta + 8);
+  return Math.max(modelRequiredDelta, publicEstimate.requiredDelta);
 }
 
 function getPublicEstimate2026(school, state) {
